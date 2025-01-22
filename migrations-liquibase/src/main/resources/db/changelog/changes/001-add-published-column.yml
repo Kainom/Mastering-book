@@ -1,0 +1,16 @@
+
+
+databaseChangeLog:
+    - changeSet:
+        id: 1
+        author: kainom
+        changes:
+          - addColumn:
+              tableName: books
+              columns:
+                - column:
+                    name: publihsed
+                    type: boolean
+                    defaultValue: false
+                    constraints:
+                    - nullable: false

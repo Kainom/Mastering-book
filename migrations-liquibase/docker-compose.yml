@@ -1,0 +1,28 @@
+services:
+  db:
+    image: postgres
+    restart: always
+    container_name: postgres_books
+    environment:
+      POSTGRES_USER: kainom
+      POSTGRES_PASSWORD: luadourada123
+      POSTGRES_DB: bookstore
+    ports:
+      - "5434:5432"
+    networks:
+      - app-network
+
+  mongodb:
+    image: mongo
+    restart: always
+    container_name: mongodb_books
+    ports:
+      - "27016:27017"
+    environment:
+      MONGO_INITDB_DATABASE: bookstore
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
