@@ -27,7 +27,7 @@ services:
 
   keycloak_db:
     image: postgres
-    restart: always
+    restart: on-failure
     container_name: db_keycloak
     environment:
       POSTGRES_DB: keycloak
@@ -40,7 +40,7 @@ services:
 
   keycloak:
     image: bitnami/keycloak:latest
-    restart: always
+    restart: on-failure
     container_name: keycloak_service
     environment:
       KEYCLOAK_ADMIN: admin       # Usuário admin

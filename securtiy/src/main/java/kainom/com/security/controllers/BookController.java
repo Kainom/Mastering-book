@@ -37,7 +37,7 @@ public class BookController {
         return book.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @GetMapping
+    @GetMapping("/")
     public List<Book> getAllBooks() {
         return bookRepository.findAll();
     }
