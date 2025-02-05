@@ -1,0 +1,63 @@
+
+services:
+
+  db:
+    image: postgres
+    restart: on-failure
+    container_name: postgres_books
+    environment:
+      POSTGRES_USER: kainom
+      POSTGRES_PASSWORD: luadourada123
+      POSTGRES_DB: bookstore
+    ports:
+      - "5434:5432"
+    networks:
+      - app-network
+
+  mongodb:
+    image: mongo
+    restart: on-failure
+    container_name: mongodb_books
+    ports:
+      - "27016:27017"
+    environment:
+      MONGO_INITDB_DATABASE: bookstore
+    networks:
+      - app-network
+
+  keycloak_db:
+    image: postgres
+    restart: on-failure
+    container_name: db_keycloak
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: keycloakpassword
+    ports:
+      - "5433:5432"
+    networks:
+      - app-network
+
+  keycloak:
+    image: bitnami/keycloak:latest
+    restart: on-failure
+    container_name: keycloak_service
+    environment:
+      KEYCLOAK_ADMIN: admin       # Usuário admin
+      KEYCLOAK_ADMIN_PASSWORD: admin  # Senha do admin
+      DB_VENDOR: POSTGRES
+      DB_ADDR: keycloak_db
+      DB_PORT: 5432
+      DB_DATABASE: keycloak
+      DB_USER: keycloak
+      DB_PASSWORD: keycloakpassword
+    ports:
+      - "8180:8080"
+    depends_on:
+      - keycloak_db
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge

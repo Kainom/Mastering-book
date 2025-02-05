@@ -1,0 +1,17 @@
+databaseChangeLog:
+  - changeSet:
+      id: 2
+      author: kainom
+      changes:
+        - insert:
+            tableName: publishers
+            columns:
+              - column:
+                  name: id
+                  value: 1
+              - column:
+                  name: name
+                  value: "Docker"
+              - column:
+                  name: address
+                  value: "Arctic Sea"
