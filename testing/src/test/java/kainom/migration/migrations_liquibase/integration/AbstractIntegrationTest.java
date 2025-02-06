@@ -2,7 +2,8 @@ package kainom.migration.migrations_liquibase.integration;
 
 import java.util.function.Supplier;
 
-
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -15,8 +16,13 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
-
 import com.github.tomakehurst.wiremock.WireMockServer;
+
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.configureFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Testcontainers
@@ -62,5 +68,42 @@ public abstract class AbstractIntegrationTest {
         registry.add("spring.data.mongodb.uri", mongoDBContainer::getReplicaSetUrl);
 
     }
+
+     @BeforeAll
+    public static void setUp() {
+        startWireMockServer();
+    }
+    
+private static void startWireMockServer() {
+        wireMockServer = new WireMockServer(wireMockConfig().port(WIREMOCK_PORT));
+        wireMockServer.start();
+        configureFor("localhost", WIREMOCK_PORT);
+        stubForOpenIDConfiguration();
+    }
+    private static void stubForOpenIDConfiguration() {
+        wireMockServer.stubFor(get(urlEqualTo("/auth/realms/BookStoreRealm/.well-known/openid-configuration"))
+                .willReturn(aResponse()
+                        .withHeader("Content-Type", "application/json")
+                        .withBody("{\n" +
+                                "   \"issuer\": \"http://localhost:" + WIREMOCK_PORT + "/auth/realms/BookStoreRealm\",\n" +
+                                "   \"authorization_endpoint\": \"http://localhost:" + WIREMOCK_PORT + "/auth/realms/BookStoreRealm/protocol/openid-connect/auth\",\n" +
+                                "   \"token_endpoint\": \"http://localhost:" + WIREMOCK_PORT + "/auth/realms/BookStoreRealm/protocol/openid-connect/token\",\n" +
+                                "   \"userinfo_endpoint\": \"http://localhost:" + WIREMOCK_PORT + "/auth/realms/BookStoreRealm/protocol/openid-connect/userinfo\",\n" +
+                                "   \"jwks_uri\": \"http://localhost:" + WIREMOCK_PORT + "/auth/realms/BookStoreRealm/protocol/openid-connect/certs\",\n" +
+                                "   \"response_types_supported\": [\"code\", \"none\", \"id_token\", \"token id_token\"],\n" +
+                                "   \"subject_types_supported\": [\"public\"],\n" +
+                                "   \"id_token_signing_alg_values_supported\": [\"RS256\"],\n" +
+                                "   \"scopes_supported\": [\"openid\", \"profile\", \"email\", \"roles\", \"web-origins\"]\n" +
+                                "}")));
+    }
+    
+
+    @AfterAll
+    public static void tearDown() {
+        if (wireMockServer != null && wireMockServer.isRunning()) {
+            wireMockServer.stop();
+        }
+    }
+
 
 }
